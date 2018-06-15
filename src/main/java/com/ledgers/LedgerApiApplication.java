@@ -4,6 +4,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import com.ledgers.domain.Casino;
 import com.ledgers.domain.Game;
@@ -33,6 +35,10 @@ public class LedgerApiApplication {
 		SpringApplication.run(LedgerApiApplication.class, args);
 	}
 	
+	@Bean
+	public MultipartResolver multipartResolver() {
+	    return new StandardServletMultipartResolver();
+	}
 
 // Add Game repo
 	@Bean
@@ -40,20 +46,28 @@ public class LedgerApiApplication {
 		return (args) -> {
 			Casino flexHome = new Casino("Flex Home Casino", -73.961825f, 40.712002f, new BigDecimal(100), "FH");
 			repository.save(flexHome) ;
-			BigDecimal tablePodium = new BigDecimal(100.00f) ;
-			
-			ArrayList<Game> games = new ArrayList<Game>();
-			Game game = new Game(flexHome.getId(), "Blackjack", "FHC1000");
-			gameRepo.save(game) ;		
-			games.add(game) ;
-			
-			game = new Game(flexHome.getId(), "Poker", "FHC1001");
-			gameRepo.save(game) ;		
-			games.add(game) ;
-			
 			HashMap<String,BigDecimal> balances = new HashMap<String,BigDecimal>() ;
-			balances.put(new String("game:"+ games.get(0).getId()), new BigDecimal(50));
-			balances.put(new String("game:"+ games.get(1).getId()), new BigDecimal(50));
+			ArrayList<Game> games = new ArrayList<Game>();
+
+			
+			// Create games, save new game, add to list of games, great start balance for game
+			Game game = new Game(flexHome.getId(), "Blackjack", "FHC1000");
+			gameRepo.save(game) ;
+			games.add(game) ;
+			balances.put(game.getGega(), new BigDecimal(50));
+			
+			// Create games, save new game, add to list of games, great start balance for game
+			game = new Game(flexHome.getId(), "Poker", "FHC1001");
+			gameRepo.save(game) ;	
+			games.add(game) ;
+			balances.put(game.getGega(), new BigDecimal(100));
+
+			// TablePodium should equal 100.
+			BigDecimal tablePodium = new BigDecimal(0) ;
+			for (BigDecimal balance : balances.values()) {
+				System.out.println("Balance: " + balance);
+				tablePodium = tablePodium.add(balance);
+			}
 			
 			Table table = new Table(flexHome.getId(), 1, games, tablePodium, true, 0, balances);
 //			ArrayList<Balance> newBalances = new ArrayList<Balance>();

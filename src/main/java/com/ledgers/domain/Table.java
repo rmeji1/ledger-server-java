@@ -7,12 +7,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,11 +48,17 @@ public class Table {
 	
 	@Getter @Setter private BigDecimal balance;
 	
-	@org.hibernate.annotations.Type(
-	        type = "org.hibernate.type.SerializableToBlobType"
-//	        parameters = { @Parameter( name = "classname", value = "java.util.HashMap" ) }
-	)
-	@Getter @Setter private HashMap<String,BigDecimal> balances ;
+//	@org.hibernate.annotations.Type(
+//	        type = "org.hibernate.type.SerializableToBlobType"
+////	        parameters = { @Parameter( name = "classname", value = "java.util.HashMap" ) }
+//	)
+	
+	@ElementCollection
+	@MapKeyColumn(name="game_id")
+	@Column(name="balance")
+    @CollectionTable(name = "table_balance")
+//	@OneToMany
+	@Getter @Setter private Map<String,BigDecimal> balances = new HashMap<String,BigDecimal>();
 	
 //	@Getter @Setter private List<Balance> newBalances ;
 	

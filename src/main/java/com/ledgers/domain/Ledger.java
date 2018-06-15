@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,16 +26,11 @@ public class Ledger {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@JsonProperty(access = Access.READ_WRITE)  
 	@Getter @Setter private Long id;
-	
-	
 	@Getter @Setter private CasinoDetails casinoDetails ;
 	@Getter @Setter private EmpDetails empDetails ;
 	@Getter @Setter private TableDetails tableDetails ;
-//	@JsonIgnore
 	@Getter @Setter private LedgerDate ledgerDate ; 
 	@Getter @Setter private boolean active ;
-	
-	// Going to remove and put in the ledger.
 	// hibernate add unique key find it
 	@Getter @Setter private String ledgerId ;
 	@Getter @Setter private BigDecimal beginningBalance;
@@ -43,9 +39,9 @@ public class Ledger {
 	@Getter @Setter private BigDecimal subtractionTotal;
 	@OneToMany
 	@Getter @Setter private List<Transaction> transactions; 
+	@Getter @Setter @Lob private byte[] employeeSignature ;
+	@Getter @Setter @Lob private byte[] managerSignature ;
 
-	public Ledger() {}
- 	
-	
+ 	public Ledger() {}	
 	
 }
