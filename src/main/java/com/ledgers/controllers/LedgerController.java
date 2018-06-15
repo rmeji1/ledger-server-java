@@ -3,6 +3,7 @@ package com.ledgers.controllers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
@@ -31,7 +32,9 @@ public class LedgerController {
 	public Long createLedger(@RequestBody Ledger ledger) {
 		System.out.println(ledger.toString());
 		LedgerDate startTime = new LedgerDate();
-		LocalDateTime now = LocalDateTime.now() ;
+		
+		ZoneId zoneId = ZoneId.of("America/New_York");
+		LocalDateTime now = LocalDateTime.now(zoneId) ;
 		String timeNowString = now.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT));
 		startTime.setStartDateTime(timeNowString);
 		
@@ -53,8 +56,9 @@ public class LedgerController {
 		BigDecimal endingBal = new BigDecimal(endingBalance);
 		Ledger ledger = ledgerRepo.findOne(ledgerId);
 		ledger.setEndingBalance(endingBal);
+		ZoneId zoneId = ZoneId.of("America/New_York");
 		ledger.getLedgerDate().setEndDateTime(
-				LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+				LocalDateTime.now(zoneId).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
 				);	
 		ledger.setActive(false);
 		ledger = ledgerRepo.save(ledger);
