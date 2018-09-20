@@ -18,11 +18,10 @@ import lombok.Setter;
 @Entity
 public class Game {
 	@Getter @Setter @Id 	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@JsonProperty(access = Access.WRITE_ONLY)  
-	private Long id ;
 	@JsonProperty(access = Access.WRITE_ONLY)  
+	private Long id ;
+//	@JsonProperty(access = Access.WRITE_ONLY)  
 	@Getter @Setter private Long casinoId ;
-	
 	@Getter @Setter private String description ;
 	@Getter @Setter private String gega ;
 	
@@ -41,4 +40,10 @@ public class Game {
 		this.description = description;
 		this.gega = gega;
 	}
+	@Override
+	public String toString() {
+		return "Game [id=" + id + ", casinoId=" + casinoId + ", description=" + description + ", gega=" + gega + "]";
+	}
+	
+	
 }

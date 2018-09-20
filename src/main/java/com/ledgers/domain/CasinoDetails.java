@@ -7,6 +7,7 @@ import lombok.Setter;
 
 @Embeddable 
 public class CasinoDetails {
+//	@Getter @Setter private Long casinoId ;
 	@Getter @Setter private String casinoCode ;
 	@Getter @Setter private String casinoName ;
 

@@ -3,6 +3,7 @@ package com.ledgers.domain;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,16 +23,19 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Ledger {
 	
-	@Id 
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	
 	@JsonProperty(access = Access.READ_WRITE)  
+	@Id 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(updatable = false, nullable = false)
 	@Getter @Setter private Long id;
+	
 	@Getter @Setter private CasinoDetails casinoDetails ;
 	@Getter @Setter private EmpDetails empDetails ;
 	@Getter @Setter private TableDetails tableDetails ;
 	@Getter @Setter private LedgerDate ledgerDate ; 
 	@Getter @Setter private boolean active ;
-	// hibernate add unique key find it
+	@Column(unique=true)
 	@Getter @Setter private String ledgerId ;
 	@Getter @Setter private BigDecimal beginningBalance;
 	@Getter @Setter private BigDecimal endingBalance;

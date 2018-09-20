@@ -3,8 +3,11 @@ package com.ledgers.controllers;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,29 +40,34 @@ public class TransactionController {
 	
 	@RequestMapping(value ="/transaction", method = RequestMethod.POST)
 	@Transactional
-	public Ledger saveTransaction(@RequestBody Transaction transaction) {
-		Ledger ledger = ledgerRepo.findOne(transaction.getLedgerId()) ;
-		//Table table = tableRepo.findOne(ledger.getTableDetails().getTableId()) ;
-
-		// use ledger to get casino when we are ready to include casino podium
-		
-		if (ledger.getTransactions() == null) {
-			ledger.setTransactions(new ArrayList<Transaction>());
+	public ResponseEntity<Ledger> saveTransaction(@RequestBody Transaction transaction) {
+		try {
+			Optional<Ledger> optionalLedger = ledgerRepo.findById(transaction.getLedgerId()) ;
+			Ledger ledger = optionalLedger.orElseThrow(NullPointerException::new) ;
+			
+			// use ledger to get casino when we are ready to include casino podium
+			if (ledger.getTransactions() == null) {
+				ledger.setTransactions(new ArrayList<Transaction>());
+			}
+			switch(transaction.getType()) {
+			case ADDITION :
+				//table.setBalance(table.getBalance().add(transaction.getAmount()));
+				BigDecimal totalAddition = ledger.getAdditionsTotal().add(transaction.getAmount());
+				ledger.setAdditionsTotal(totalAddition);
+				break;
+			case SUBTRACTION:
+				BigDecimal totalSubtraction = ledger.getSubtractionTotal().add(transaction.getAmount());
+				ledger.setSubtractionTotal(totalSubtraction);
+				break;
+			}
+			transaction = repo.save(transaction);
+			ledger.getTransactions().add(transaction);
+			ledger = ledgerRepo.save(ledger);
+			return new ResponseEntity<Ledger>(ledger, HttpStatus.CREATED) ;
+		} catch(NullPointerException ex) {
+			return new ResponseEntity<Ledger>(HttpStatus.NOT_FOUND) ; 
+		}catch(IllegalArgumentException ex) {
+			return new ResponseEntity<Ledger>(HttpStatus.NOT_FOUND) ; 
 		}
-		switch(transaction.getType()) {
-		case ADDITION :
-			//table.setBalance(table.getBalance().add(transaction.getAmount()));
-			BigDecimal totalAddition = ledger.getAdditionsTotal().add(transaction.getAmount());
-			ledger.setAdditionsTotal(totalAddition);
-			break;
-		case SUBTRACTION:
-			BigDecimal totalSubtraction = ledger.getSubtractionTotal().add(transaction.getAmount());
-			ledger.setSubtractionTotal(totalSubtraction);
-			break;
-		}
-		transaction = repo.save(transaction);
-		ledger.getTransactions().add(transaction);
-		ledger = ledgerRepo.save(ledger);
-		return ledger ;
 	}
 }

@@ -4,6 +4,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
@@ -26,6 +36,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@EnableResourceServer
 @SpringBootApplication
 public class LedgerApiApplication {
 
@@ -40,11 +51,46 @@ public class LedgerApiApplication {
 	    return new StandardServletMultipartResolver();
 	}
 
+	
+//
+//    @EnableGlobalMethodSecurity(prePostEnabled = true)
+//    protected static class GlobalSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+//        @Override
+//        protected MethodSecurityExpressionHandler createExpressionHandler() {
+//            return new OAuth2MethodSecurityExpressionHandler();
+//        }
+//    }
+//
+//    @Configuration
+//    @Order(0)
+//    static class ResourceSecurityConfigurer extends ResourceServerConfigurerAdapter {
+//
+//        @Override
+//        public void configure(HttpSecurity http) throws Exception {
+//            http.authorizeRequests()
+//                    .antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+//                    .anyRequest().authenticated();
+//        }
+//}
+	
+	
+	
+	
+	
+	
 // Add Game repo
 	@Bean
 	public CommandLineRunner demo(CasinoRepo repository, TableRepo tableRepo, GameRepo gameRepo) {
 		return (args) -> {
-			Casino flexHome = new Casino("Flex Home Casino", -73.961825f, 40.712002f, new BigDecimal(100), "FH");
+			//Casino(String casinoCode, String name, float longitude, float latitude, String casinoImageURL,
+			//		BigDecimal podium)
+			
+			Casino flexHome = new Casino("FH","Flex Home Casino", 
+					-73.961830f, 
+					20.712000f, 
+					"http://arctecinc.com/wp-content/uploads/2015/08/Casino-M8trix-1-MAIN-PHOTO.jpg",
+					new BigDecimal(0));
+			
 			repository.save(flexHome) ;
 			HashMap<String,BigDecimal> balances = new HashMap<String,BigDecimal>() ;
 			ArrayList<Game> games = new ArrayList<Game>();

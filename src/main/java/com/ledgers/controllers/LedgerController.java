@@ -6,8 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -54,45 +57,47 @@ public class LedgerController {
 	public Ledger pushLedger(@PathVariable("ledgerId") Long ledgerId,
 			@RequestParam("endingBalance") String endingBalance) {
 		BigDecimal endingBal = new BigDecimal(endingBalance);
-		Ledger ledger = ledgerRepo.findOne(ledgerId);
-		ledger.setEndingBalance(endingBal);
-		ZoneId zoneId = ZoneId.of("America/New_York");
-		ledger.getLedgerDate().setEndDateTime(
-				LocalDateTime.now(zoneId).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
-				);	
-		ledger.setActive(false);
-		ledger = ledgerRepo.save(ledger);
-		return ledger ;
+		Optional<Ledger> optionalLedger = ledgerRepo.findById(ledgerId);
+		if (optionalLedger.isPresent()) {
+			Ledger ledger = optionalLedger.get() ;
+			ledger.setEndingBalance(endingBal);
+			ZoneId zoneId = ZoneId.of("America/New_York");
+			ledger.getLedgerDate().setEndDateTime(
+					LocalDateTime.now(zoneId).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+					);	
+			ledger.setActive(false);
+			ledger = ledgerRepo.save(ledger);
+			return ledger ;
+		}
+		return null ;
 	}
 	
-	@PutMapping(value="/ledger/emp/{ledgerId}")
-    public int handleEmployeeFileUpload(@PathVariable("ledgerId") long ledgerId ,@RequestParam("file") MultipartFile file) {
-		Ledger ledger = ledgerRepo.findOne(ledgerId);
-		System.out.println("Got ledger with id: " + ledger.getLedgerId());
-		try {
-			ledger.setEmployeeSignature(file.getBytes());
-			ledgerRepo.save(ledger);
-			System.out.println("Saved the ledger.");
-			return 1;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return 0 ;
+	@PutMapping(value="/ledger/{empType}/{ledgerId}")
+    public boolean handleEmployeeFileUpload(@PathVariable("empType") String employeeType, @PathVariable("ledgerId") long ledgerId ,@RequestParam("file") MultipartFile file) {
+		Optional<Ledger> optionalLedger = ledgerRepo.findById(ledgerId);
+		if( optionalLedger.isPresent() ) {
+			Ledger ledger = optionalLedger.get();
+			System.out.println("Got ledger with id: " + ledger.getLedgerId());
+			try {
+				if ( employeeType.equals("emp")) {
+					ledger.setEmployeeSignature(file.getBytes());
+				}else if ( employeeType.equals("man")) {
+					ledger.setManagerSignature(file.getBytes());
+				} else {
+					throw new IOException("Invalid Employlee type path variable.");
+				}
+				ledgerRepo.save(ledger);
+				System.out.println("Saved the ledger.");
+				return true;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-      }
-
-
-	@PutMapping(value="/ledger/man/{ledgerId}")
-    public int handleManagerFileUpload(@PathVariable("ledgerId") long ledgerId ,@RequestParam("file") MultipartFile file) {
-		Ledger ledger = ledgerRepo.findOne(ledgerId);
-		System.out.println("Got ledger with id: " + ledger.getLedgerId());
-		try {
-			ledger.setManagerSignature(file.getBytes());
-			ledgerRepo.save(ledger);
-			System.out.println("Saved the ledger.");
-			return 1;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return 0 ;
-		}
-      }
+		return false ;
+    }
+	
+	@GetMapping(value="/ledger/active/{casinoId}")
+	public List<Ledger> getActiveLedgerForCasino(@PathVariable("casinoId") Long casinoId) {
+		return ledgerRepo.findByActiveAndTableDetailsCasino(true, casinoId);
+	}
 }
